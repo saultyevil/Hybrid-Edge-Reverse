@@ -9,6 +9,7 @@
  *
  */
 
+#include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -70,11 +71,6 @@ void edge_reverse(double *edge_image, int num_rows, int num_cols, int num_iterat
         old_image[index_into_2d(i, j, buffer_cols)] = new_image[index_into_2d(i, j, buffer_cols)];
       }
     }
-    /* Output progress every 100 iterations -- using +1 to avoid output at 0
-       iterations */
-    // if ((n + 1) % 100 == 0) {
-    //   printf("%d iterations completed\n", n + 1);
-    // }
   }
 
   /* Copy final processed image into edge_image */
@@ -87,3 +83,7 @@ void edge_reverse(double *edge_image, int num_rows, int num_cols, int num_iterat
   free(old_image);
   free(new_image);
 }
+
+void create_halo_type(MPI_Datatype *type) {}
+
+void communicate_halo(MPI_Datatype *halo_type, double *image) {}

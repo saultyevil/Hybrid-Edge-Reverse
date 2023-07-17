@@ -18,11 +18,11 @@
 /**
  * @brief Distribute work to all ranks using scatter communication
  *
- * @param image
- * @param rank_image
- * @param num_rows
- * @param num_cols
- * @param num_ranks
+ * @param image       The image buffer to gather into
+ * @param rank_image  The image for the rank
+ * @param num_rows    The number of rows in `image`, but is updated to be the number of rows in `rank_image`
+ * @param num_cols    The number of cols in `rank_image`
+ * @param num_ranks   The number of ranks in the communicator
  */
 void distribute_work(double *image, double **rank_image, int *num_rows, int num_cols, int num_ranks) {
   if ((*num_rows) % num_ranks == 0) {
@@ -47,11 +47,11 @@ void distribute_work(double *image, double **rank_image, int *num_rows, int num_
 /**
  * @brief Gather results back to the root rank
  *
- * @param image
- * @param rank_image
- * @param num_rows
- * @param num_cols
- * @param num_ranks
+ * @param image       The image buffer to gather into
+ * @param rank_image  The image for the rank
+ * @param num_rows    The number of rows in `rank_image`
+ * @param num_cols    The number of cols in `rank_image`
+ * @param num_ranks   The number of ranks in the communicator
  */
 void gather_work(double *image, double *rank_image, int num_rows, int num_cols, int num_ranks) {
   if (num_rows % num_ranks == 0) {

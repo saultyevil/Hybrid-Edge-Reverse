@@ -44,12 +44,20 @@ int main(int argc, char **argv) {
   }
 
   pgmread(argv[1], image, num_rows, num_cols);
-  distribute_work(image, &rank_image, &num_rows, num_cols, num_ranks);
-  edge_reverse(rank_image, num_rows, num_cols, atoi(argv[2]));
-  gather_work(image, rank_image, num_rows, num_cols, num_ranks);
+
+  /* Each rank will process N amount of rows of the image */
+  int num_rows_per_rank = num_rows;
+  distribute_work(image, &rank_image, &num_rows_per_rank, num_cols, num_ranks);
+
+  /* This is mostly unchanged from the serial version, as it works for any
+     arbitrary sized image */
+  edge_reverse(rank_image, num_rows_per_rank, num_cols, atoi(argv[2]));
+
+  /* Gather the small images per rank back into the main image buffer */
+  gather_work(image, rank_image, num_rows_per_rank, num_cols, num_ranks);
 
   if (my_rank == ROOT_RANK) {
-    pgmwrite("reversed-image.pgm", image, num_rows * num_ranks, num_cols);
+    pgmwrite("reversed-image.pgm", image, num_rows, num_cols);
   }
 
   free(image);
