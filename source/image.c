@@ -72,9 +72,9 @@ void edge_reverse(double *edge_image, int num_rows, int num_cols, int num_iterat
     }
     /* Output progress every 100 iterations -- using +1 to avoid output at 0
        iterations */
-    if ((n + 1) % 100 == 0) {
-      printf("%d iterations completed\n", n + 1);
-    }
+    // if ((n + 1) % 100 == 0) {
+    //   printf("%d iterations completed\n", n + 1);
+    // }
   }
 
   /* Copy final processed image into edge_image */

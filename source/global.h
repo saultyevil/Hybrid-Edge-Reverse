@@ -13,3 +13,7 @@ void pgmsize(char *filename, int *nx, int *ny);
 void pgmread(char *filename, void *vx, int nx, int ny);
 void pgmwrite(char *filename, void *vx, int nx, int ny);
 void edge_reverse(double *edge_image, int nx, int ny, int num_iterations);
+void distribute_work(double *image, double **rank_image, int *num_rows, int num_cols, int num_ranks);
+void gather_work(double *image, double *rank_image, int num_rows, int num_cols, int num_ranks);
+
+#define ROOT_RANK 0
