@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 
   /* This is mostly unchanged from the serial version, as it works for any
      arbitrary sized image */
-  edge_reverse(rank_image, num_rows_per_rank, num_cols, atoi(argv[2]));
+  edge_reverse(rank_image, num_rows_per_rank, num_cols, atoi(argv[2]), my_rank, num_ranks);
 
   /* Gather the small images per rank back into the main image buffer */
   gather_work(image, rank_image, num_rows_per_rank, num_cols, num_ranks);
