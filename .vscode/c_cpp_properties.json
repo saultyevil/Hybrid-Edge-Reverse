@@ -10,7 +10,7 @@
             "compilerPath": "/opt/homebrew/bin/mpicc",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "intelliSenseMode": "linux-gcc-x64",
+            "intelliSenseMode": "macos-gcc-arm64",
             "configurationProvider": "ms-vscode.makefile-tools"
         }
     ],
