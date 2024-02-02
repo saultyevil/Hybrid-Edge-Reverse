@@ -5,7 +5,7 @@ SRC_DIRS ?= ./source
 
 # Macros for CC
 CC = mpicc
-CFLAGS = -Wall -Wpedantic -g
+CFLAGS = -Wall -Wpedantic -fopenmp
 LIBS = -lm
 
 # Directories

@@ -9,6 +9,10 @@
  *
  */
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,16 +26,31 @@
  * @param argv  The argument vector
  */
 int main(int argc, char **argv) {
-  MPI_Init(&argc, &argv);
-
-  int my_rank, num_ranks;
-  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
-
   if (argc != 3) {
     printf("Invalid arguments, expected two arguments: filename, num_iterations\n");
     return EXIT_FAILURE;
   }
+
+  int my_rank, num_ranks;
+  MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+
+  if (my_rank == ROOT_RANK) {
+    printf("There are %d MPI ranks\n", num_ranks);
+  }
+
+#ifdef _OPENMP
+#pragma omp parallel
+{
+#pragma omp master
+  {
+    if (my_rank == ROOT_RANK) {
+      printf("There are %d OpenMP threads\n", omp_get_num_threads());
+    }
+  }
+}
+#endif
 
   int num_rows, num_cols;
   pgmsize(argv[1], &num_rows, &num_cols);
@@ -54,7 +73,7 @@ int main(int argc, char **argv) {
   edge_reverse(rank_image, num_rows_per_rank, num_cols, atoi(argv[2]), my_rank, num_ranks);
 
   /* Gather the small images per rank back into the main image buffer */
-  gather_work(image, rank_image, num_rows_per_rank, num_cols, num_ranks);
+  gather_work(image, rank_image, num_rows_per_rank, num_cols);
 
   if (my_rank == ROOT_RANK) {
     pgmwrite("reversed-image.pgm", image, num_rows, num_cols);

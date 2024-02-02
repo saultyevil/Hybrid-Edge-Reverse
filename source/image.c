@@ -35,18 +35,18 @@ int index_into_2d(int row, int col, int num_cols) { return row * num_cols + col;
  * @param num_ranks
  */
 void communicate_boundary_pixels(double *image, int num_rows, int num_cols, int my_rank, int num_ranks) {
-  const int prev_rank = my_rank - 1 < 0 ? MPI_PROC_NULL : my_rank - 1;
-  const int next_rank = my_rank + 1 > num_ranks - 1 ? MPI_PROC_NULL : my_rank + 1;
+  const int top_rank = my_rank - 1 < 0 ? MPI_PROC_NULL : my_rank - 1;
+  const int bottom_rank = my_rank + 1 > num_ranks - 1 ? MPI_PROC_NULL : my_rank + 1;
   const int my_tag = 0;
 
   /* Top row to bottom row */
-  MPI_Sendrecv(&image[index_into_2d(0, 1, num_cols)], num_rows, MPI_DOUBLE, prev_rank, my_tag,
-               &image[index_into_2d(num_rows - 1, 1, num_cols)], num_rows, MPI_DOUBLE, next_rank, my_tag,
+  MPI_Sendrecv(&image[index_into_2d(1, 1, num_cols)], num_rows, MPI_DOUBLE, top_rank, my_tag,
+               &image[index_into_2d(num_rows - 1, 1, num_cols)], num_rows, MPI_DOUBLE, bottom_rank, my_tag,
                MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
   /* Bottom row into top row */
-  MPI_Sendrecv(&image[index_into_2d(num_rows - 2, 1, num_cols)], num_rows, MPI_DOUBLE, next_rank, my_tag,
-               &image[index_into_2d(0, 1, num_cols)], num_rows, MPI_DOUBLE, prev_rank, my_tag, MPI_COMM_WORLD,
+  MPI_Sendrecv(&image[index_into_2d(num_rows - 2, 1, num_cols)], num_rows, MPI_DOUBLE, bottom_rank, my_tag,
+               &image[index_into_2d(1, 1, num_cols)], num_rows, MPI_DOUBLE, top_rank, my_tag, MPI_COMM_WORLD,
                MPI_STATUS_IGNORE);
 }
 
@@ -80,11 +80,8 @@ void edge_reverse(double *edge_image, int num_rows, int num_cols, int num_iterat
 
   /* Iterative calculation */
   for (int n = 0; n < num_iterations; ++n) {
-
-    communicate_boundary_pixels(old_image, num_rows, num_cols, my_rank, num_ranks);
-    // printf("iter %d: boundary exchanged\n", n);
-
     /* Convert a pixel's edge image back to the image */
+    #pragma omp parallel for collapse(2)
     for (int i = 1; i < num_rows + 1; ++i) {
       for (int j = 1; j < num_cols + 1; ++j) {
         new_image[index_into_2d(i, j, buffer_cols)] =
@@ -100,6 +97,9 @@ void edge_reverse(double *edge_image, int num_rows, int num_cols, int num_iterat
         old_image[index_into_2d(i, j, buffer_cols)] = new_image[index_into_2d(i, j, buffer_cols)];
       }
     }
+
+    /* Populate halo pixels with neighbouring process data */
+    communicate_boundary_pixels(old_image, buffer_rows, buffer_cols, my_rank, num_ranks);
   }
 
   /* Copy final processed image into edge_image */
